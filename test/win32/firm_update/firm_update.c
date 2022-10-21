@@ -59,67 +59,99 @@ void boottest(char *ifname, uint16 slave, char *filename)
 		/* find and auto-config slaves */
 
 
-	    if ( ec_config_init(FALSE) > 0 )
+	    if (ec_config_init(FALSE) > 0)
 		{
+            // Wait for slave to reach PREOP state
+            uint16 ec_state = ec_statecheck(slave, EC_STATE_PRE_OP,  EC_TIMEOUTSTATE * 4);
+
 			printf("%d slaves found and configured.\n",ec_slavecount);
 
 			printf("Request init state for slave %d\n", slave);
-			ec_slave[slave].state = EC_STATE_INIT;
+			ec_slave[slave].state = EC_STATE_INIT | EC_STATE_ACK;
 			ec_writestate(slave);
 
 			/* wait for slave to reach INIT state */
-			ec_statecheck(slave, EC_STATE_INIT,  EC_TIMEOUTSTATE * 4);
-			printf("Slave %d state to INIT.\n", slave);
+			ec_state = ec_statecheck(slave, EC_STATE_INIT,  EC_TIMEOUTSTATE * 4);
+            uint16 ec_alStatus = ec_slave[slave].ALstatuscode;
+            if (ec_state == EC_STATE_INIT && ec_alStatus == 0)
+            {
 
-			/* read BOOT mailbox data, master -> slave */
-			data = ec_readeeprom(slave, ECT_SII_BOOTRXMBX, EC_TIMEOUTEEP);
-			ec_slave[slave].SM[0].StartAddr = (uint16)LO_WORD(data);
-            		ec_slave[slave].SM[0].SMlength = (uint16)HI_WORD(data);
-			/* store boot write mailbox address */
-			ec_slave[slave].mbx_wo = (uint16)LO_WORD(data);
-			/* store boot write mailbox size */
-			ec_slave[slave].mbx_l = (uint16)HI_WORD(data);
+                printf("Slave %d state to INIT.\n", slave);
 
-			/* read BOOT mailbox data, slave -> master */
-			data = ec_readeeprom(slave, ECT_SII_BOOTTXMBX, EC_TIMEOUTEEP);
-			ec_slave[slave].SM[1].StartAddr = (uint16)LO_WORD(data);
-                        ec_slave[slave].SM[1].SMlength = (uint16)HI_WORD(data);
-			/* store boot read mailbox address */
-			ec_slave[slave].mbx_ro = (uint16)LO_WORD(data);
-			/* store boot read mailbox size */
-			ec_slave[slave].mbx_rl = (uint16)HI_WORD(data);
+                /* read BOOT mailbox data, master -> slave */
+                data = ec_readeeprom(slave, ECT_SII_BOOTRXMBX, EC_TIMEOUTEEP);
+                ec_slave[slave].SM[0].StartAddr = (uint16)LO_WORD(data);
+                ec_slave[slave].SM[0].SMlength = (uint16)HI_WORD(data);
 
-			printf(" SM0 A:%4.4x L:%4d F:%8.8x\n", ec_slave[slave].SM[0].StartAddr, ec_slave[slave].SM[0].SMlength,
-			    (int)ec_slave[slave].SM[0].SMflags);
-			printf(" SM1 A:%4.4x L:%4d F:%8.8x\n", ec_slave[slave].SM[1].StartAddr, ec_slave[slave].SM[1].SMlength,
-			    (int)ec_slave[slave].SM[1].SMflags);
-			/* program SM0 mailbox in for slave */
-			ec_FPWR (ec_slave[slave].configadr, ECT_REG_SM0, sizeof(ec_smt), &ec_slave[slave].SM[0], EC_TIMEOUTRET);
-			/* program SM1 mailbox out for slave */
-			ec_FPWR (ec_slave[slave].configadr, ECT_REG_SM1, sizeof(ec_smt), &ec_slave[slave].SM[1], EC_TIMEOUTRET);
+                /* store boot write mailbox address */
+                ec_slave[slave].mbx_wo = (uint16)LO_WORD(data);
+                /* store boot write mailbox size */
+                ec_slave[slave].mbx_l = (uint16)HI_WORD(data);
 
-			printf("Request BOOT state for slave %d\n", slave);
-			ec_slave[slave].state = EC_STATE_BOOT;
-			ec_writestate(slave);
+                /* read BOOT mailbox data, slave -> master */
+                data = ec_readeeprom(slave, ECT_SII_BOOTTXMBX, EC_TIMEOUTEEP);
+                ec_slave[slave].SM[1].StartAddr = (uint16)LO_WORD(data);
+                ec_slave[slave].SM[1].SMlength = (uint16)HI_WORD(data);
+                
+                /* store boot read mailbox address */
+                ec_slave[slave].mbx_ro = (uint16)LO_WORD(data);
+                /* store boot read mailbox size */
+                ec_slave[slave].mbx_rl = (uint16)HI_WORD(data);
 
-			/* wait for slave to reach BOOT state */
-			if (ec_statecheck(slave, EC_STATE_BOOT,  EC_TIMEOUTSTATE * 10) == EC_STATE_BOOT)
-			{
-				printf("Slave %d state to BOOT.\n", slave);
-				filesize = 0;
-				if (input_bin(filename, &filesize))
-				{
-					printf("File read OK, %d bytes.\n",filesize);
-					printf("FoE write....");
-					j = ec_FOEwrite(slave, filename, 0, filesize , &filebuffer, EC_TIMEOUTSTATE);
-					printf("result %d.\n",j);
-					printf("Request init state for slave %d\n", slave);
-					ec_slave[slave].state = EC_STATE_INIT;
-					ec_writestate(slave);
-				}
-				else
-				    printf("File not read OK.\n");
-			}
+                printf(" SM0 A:0x%4.4x L:%4d F:0x%8.8x\n", ec_slave[slave].SM[0].StartAddr, ec_slave[slave].SM[0].SMlength,
+                    (int)ec_slave[slave].SM[0].SMflags);
+                printf(" SM1 A:0x%4.4x L:%4d F:0x%8.8x\n", ec_slave[slave].SM[1].StartAddr, ec_slave[slave].SM[1].SMlength,
+                    (int)ec_slave[slave].SM[1].SMflags);
+                    
+                ec_smt blankSM = {0, 0, 0};
+
+                /* program SM0 mailbox in for slave */
+                ec_FPWR (ec_slave[slave].configadr, ECT_REG_SM0, sizeof(ec_smt), &blankSM, EC_TIMEOUTRET * 3);
+                ec_FPWR (ec_slave[slave].configadr, ECT_REG_SM0, sizeof(ec_smt), &ec_slave[slave].SM[0], EC_TIMEOUTRET * 3);
+                /* program SM1 mailbox out for slave */
+                ec_FPWR (ec_slave[slave].configadr, ECT_REG_SM1, sizeof(ec_smt), &blankSM, EC_TIMEOUTRET * 3);
+                ec_FPWR (ec_slave[slave].configadr, ECT_REG_SM1, sizeof(ec_smt), &ec_slave[slave].SM[1], EC_TIMEOUTRET * 3);
+
+                printf("Request BOOT state for slave %d\n", slave);
+                ec_slave[slave].state = EC_STATE_BOOT;
+                ec_writestate(slave);
+
+                /* wait for slave to reach BOOT state */
+                ec_state = ec_statecheck(slave, EC_STATE_BOOT, EC_TIMEOUTSTATE);
+                ec_alStatus = ec_slave[slave].ALstatuscode;
+                if (ec_alStatus > 0)
+                {
+                    printf("Got error 0x%4.4x\n", ec_alStatus);
+                }
+                else
+                {
+                    if (ec_state == EC_STATE_BOOT)
+                    {
+                        printf("Slave %d state to BOOT.\n", slave);
+                        filesize = 0;
+                        if (input_bin(filename, &filesize))
+                        {
+                            printf("File read OK, %d bytes.\n",filesize);
+                            printf("FoE write....");
+                            j = ec_FOEwrite(slave, filename, 0, filesize , &filebuffer, EC_TIMEOUTSTATE);
+                            printf("result %d.\n",j);
+                            printf("Request init state for slave %d\n", slave);
+                            ec_slave[slave].state = EC_STATE_INIT;
+                            ec_writestate(slave);
+                        }
+                        else
+                            printf("File not read OK.\n");
+                    }
+                    else
+                    {
+                        printf("Could not go to BOOT state; in state 0x%2.2x\n", ec_state);
+                    }
+                }
+            }
+            else
+            {
+                printf("Could not go to INIT state; in state 0x%2.2x with AL Status 0x%2.2x\n", ec_state, ec_alStatus);
+            }
 
 		}
 		else

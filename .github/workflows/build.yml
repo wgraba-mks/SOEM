@@ -3,13 +3,8 @@ on: [push, pull_request, workflow_dispatch]
 env:
   BUILD_TYPE: Release
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,13 +20,48 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          cmake --build $GITHUB_WORKSPACE/build -j4 --config $BUILD_TYPE
+          cmake --build $GITHUB_WORKSPACE/build -j4
           
       - uses: actions/upload-artifact@v3
         with:
           name: shared-libs
           path: |
             build/**/*.so
+            
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Configure x64
+        shell: bash
+        run: |
+          cmake -E make_directory $GITHUB_WORKSPACE/build
+          cmake -B $GITHUB_WORKSPACE/build -S $GITHUB_WORKSPACE -A x64
+
+      - name: Build x64
+        shell: bash
+        run: |
+          cmake --build $GITHUB_WORKSPACE/build -j4 --config $BUILD_TYPE
+          
+      - name: Configure x86
+        shell: bash
+        run: |
+          rm -rf -- $GITHUB_WORKSPACE/build
+          cmake -E make_directory $GITHUB_WORKSPACE/build
+          cmake -B $GITHUB_WORKSPACE/build -S $GITHUB_WORKSPACE -A x86
+
+      - name: Build x86
+        shell: bash
+        run: |
+          cmake --build $GITHUB_WORKSPACE/build -j4 --config $BUILD_TYPE
+          
+      - uses: actions/upload-artifact@v3
+        with:
+          name: shared-libs
+          path: |
             build/**/*.dll
             
       - uses: actions/upload-artifact@v3

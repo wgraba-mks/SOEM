@@ -26,3 +26,11 @@ jobs:
         shell: bash
         run: |
           cmake --build $GITHUB_WORKSPACE/build -j4 --target install
+          
+      - uses: actions/upload-artifact@v3
+        with:
+          name: libs
+          path: |
+            $GITHUB_WORKSPACE/build/**/*.dll
+            $GITHUB_WORKSPACE/build/**/*.lib
+

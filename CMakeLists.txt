@@ -5,6 +5,8 @@ project(SOEM
     VERSION 1.4.0
     LANGUAGES C)
 
+option(BUILD_SHARED_LIBS "Build shared library" ON)
+
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   # Default to installing in SOEM source directory
   set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/install)
@@ -17,6 +19,10 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   set(BUILD_TESTS TRUE)
 else()
   message(STATUS "SOEM: not building tests when built as dependency")
+  set(BUILD_TESTS FALSE)
+endif()
+
+if(BUILD_SHARED_LIBS)
   set(BUILD_TESTS FALSE)
 endif()
 
@@ -69,33 +75,39 @@ file(GLOB SOEM_HEADERS soem/*.h)
 file(GLOB OSAL_HEADERS osal/osal.h osal/${OS}/*.h)
 file(GLOB OSHW_HEADERS oshw/${OS}/*.h)
 
-add_library(soem STATIC
+set(LIBNAME "libsoem_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}")
+
+add_library(${LIBNAME}
+  libsoem_dll.def
   ${SOEM_SOURCES}
   ${OSAL_SOURCES}
   ${OSHW_SOURCES}
   ${OSHW_EXTRA_SOURCES})
-target_link_libraries(soem ${OS_LIBS})
 
-target_include_directories(soem PUBLIC
+target_link_libraries(${LIBNAME} ${OS_LIBS})
+
+target_include_directories(${LIBNAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/soem>
   $<INSTALL_INTERFACE:include/soem>)
 
-target_include_directories(soem PUBLIC
+target_include_directories(${LIBNAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/osal>
   $<INSTALL_INTERFACE:include/soem>)
 
-target_include_directories(soem PUBLIC
+target_include_directories(${LIBNAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/osal/${OS}>
   $<INSTALL_INTERFACE:include/soem>)
 
-target_include_directories(soem
+target_include_directories(${LIBNAME}
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/oshw/${OS}>
   $<INSTALL_INTERFACE:include/soem>
   )
 
+#set_target_properties(${LIBNAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
 message(STATUS "LIB_DIR: ${SOEM_LIB_INSTALL_DIR}")
 
-install(TARGETS soem EXPORT soemConfig DESTINATION ${SOEM_LIB_INSTALL_DIR})
+install(TARGETS ${LIBNAME} EXPORT soemConfig DESTINATION ${SOEM_LIB_INSTALL_DIR})
 
 install(EXPORT soemConfig DESTINATION share/soem/cmake)
 

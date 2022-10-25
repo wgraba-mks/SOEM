@@ -1,0 +1,36 @@
+LIBRARY
+EXPORTS
+    ec_slavecount DATA
+    ec_slave DATA
+    ec_group DATA
+    ec_init
+    ec_init_redundant
+    ec_close
+    ec_config
+    ec_readODdescription
+    ec_readODlist
+    ec_readOE
+    ec_readOEsingle
+    ec_reconfig_slave
+    ec_recover_slave
+    ec_config_map
+    ec_configdc
+    ec_config_init
+    ec_readstate
+    ec_writestate
+    ec_statecheck
+    ec_ALstatuscode2string
+    ec_elist2string
+    ec_find_adapters
+    ec_SDOread
+    ec_SDOwrite
+    ec_send_processdata
+    ec_receive_processdata
+    ec_FPRD
+    ec_FPWR
+	ec_poperror
+	ec_esidump
+	ec_readeeprom
+	ec_writeeeprom
+    ec_FOEwrite
+    ec_FOEread

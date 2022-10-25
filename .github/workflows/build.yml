@@ -25,13 +25,18 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          cmake --build $GITHUB_WORKSPACE/build -j4 --target install
+          cmake --build $GITHUB_WORKSPACE/build -j4 --config $BUILD_TYPE
           
       - uses: actions/upload-artifact@v3
         with:
-          name: libs
+          name: shared-libs
           path: |
             build/**/*.so
             build/**/*.dll
+            
+      - uses: actions/upload-artifact@v3
+        with:
+          name: static-libs
+          path: |
             build/**/*.lib
 

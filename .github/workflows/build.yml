@@ -31,6 +31,7 @@ jobs:
         with:
           name: libs
           path: |
-            $GITHUB_WORKSPACE/build/**/*.dll
-            $GITHUB_WORKSPACE/build/**/*.lib
+            build/**/*.so
+            build/**/*.dll
+            build/**/*.lib
 

@@ -26,6 +26,8 @@ if(BUILD_SHARED_LIBS)
   set(BUILD_TESTS FALSE)
 endif()
 
+set(TARGET_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+
 if(WIN32)
   set(OS "win32")
   include_directories(oshw/win32/wpcap/Include)
@@ -33,6 +35,7 @@ if(WIN32)
     link_directories(${CMAKE_CURRENT_LIST_DIR}/oshw/win32/wpcap/Lib/x64)
   elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     link_directories(${CMAKE_CURRENT_LIST_DIR}/oshw/win32/wpcap/Lib)
+    set(TARGET_ARCH "X86")
   endif()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D _CRT_SECURE_NO_WARNINGS")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  /WX")
@@ -75,7 +78,7 @@ file(GLOB SOEM_HEADERS soem/*.h)
 file(GLOB OSAL_HEADERS osal/osal.h osal/${OS}/*.h)
 file(GLOB OSHW_HEADERS oshw/${OS}/*.h)
 
-set(LIBNAME "libsoem_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR}")
+set(LIBNAME "libsoem_${CMAKE_SYSTEM_NAME}_${TARGET_ARCH}")
 
 add_library(${LIBNAME}
   libsoem_dll.def

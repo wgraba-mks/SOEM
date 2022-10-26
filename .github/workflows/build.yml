@@ -51,7 +51,7 @@ jobs:
         run: |
           rm -rf -- $GITHUB_WORKSPACE/build
           cmake -E make_directory $GITHUB_WORKSPACE/build
-          cmake -B $GITHUB_WORKSPACE/build -S $GITHUB_WORKSPACE -A x86
+          cmake -B $GITHUB_WORKSPACE/build -S $GITHUB_WORKSPACE -A Win32
 
       - name: Build x86
         shell: bash

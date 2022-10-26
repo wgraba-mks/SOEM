@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules")
 project(SOEM
     DESCRIPTION "Simple Open EtherCAT Master"
-    VERSION 1.4.0
+    VERSION 1.4.1
     LANGUAGES C)
 
 option(BUILD_SHARED_LIBS "Build shared library" ON)

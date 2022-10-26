@@ -46,6 +46,18 @@ jobs:
         run: |
           cmake --build $GITHUB_WORKSPACE/build -j4 --config $BUILD_TYPE
           
+      - uses: actions/upload-artifact@v3
+        with:
+          name: shared-libs
+          path: |
+            build/**/*.dll
+            
+      - uses: actions/upload-artifact@v3
+        with:
+          name: static-libs
+          path: |
+            build/**/*.lib
+          
       - name: Configure x86
         shell: bash
         run: |

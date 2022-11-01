@@ -1,5 +1,4 @@
 # Simple Open EtherCAT Master Library
-[![Build Status](https://github.com/OpenEtherCATsociety/SOEM/workflows/build/badge.svg?branch=master)](https://github.com/OpenEtherCATsociety/SOEM/actions?workflow=build)
 
 BUILDING
 ========

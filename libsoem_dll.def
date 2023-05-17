@@ -28,9 +28,32 @@ EXPORTS
     ec_receive_processdata
     ec_FPRD
     ec_FPWR
-	ec_poperror
-	ec_esidump
-	ec_readeeprom
-	ec_writeeeprom
+    ec_poperror
+    ec_esidump
+    ec_readeeprom
+    ec_writeeeprom
     ec_FOEwrite
     ec_FOEread
+
+    ecx_poperror
+    ecx_iserror
+    ecx_init
+    ecx_init_redundant
+    ecx_close
+    ecx_readstate
+    ecx_writestate
+    ecx_statecheck
+    ecx_esidump
+    ecx_readeeprom
+    ecx_writeeeprom
+    ecx_send_processdata
+    ecx_receive_processdata
+
+    ecx_configdc
+    ecx_config_init
+    ecx_config_map_group_aligned
+    ecx_recover_slave
+    ecx_reconfig_slave
+
+    ecx_SDOread
+    ecx_SDOwrite

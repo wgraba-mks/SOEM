@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules")
 project(SOEM
     DESCRIPTION "Simple Open EtherCAT Master"
-    VERSION 1.4.1
+    VERSION 1.4.2
     LANGUAGES C)
 
 option(BUILD_SHARED_LIBS "Build shared library" ON)
@@ -120,7 +120,7 @@ install(FILES
   ${OSHW_HEADERS}
   DESTINATION ${SOEM_INCLUDE_INSTALL_DIR})
 
-if(BUILD_TESTS) 
+if(BUILD_TESTS)
   add_subdirectory(test/simple_ng)
   add_subdirectory(test/win32/slaveinfo)
   add_subdirectory(test/win32/eepromtool)
